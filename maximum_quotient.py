@@ -2,13 +2,16 @@ class MaximumQuotient:
     def __init__(self, num_arr):
         self.num_arr = num_arr
         self.n = len(num_arr)
+
         self.min_memo = [[-1 for i in range(self.n)] for j in range(self.n)]
         self.max_memo = [[-1 for i in range(self.n)] for j in range(self.n)]
         self.print_max_memo = [["m" for i in range(self.n)] for j in range(self.n)]
         self.print_min_memo = [["m" for i in range(self.n)] for j in range(self.n)]
+
         for i in range(self.n):
             self.min_memo[i][i] = self.max_memo[i][i] = self.num_arr[i]  # base cases, i = j
             self.print_max_memo[i][i] = self.print_min_memo[i][i] = str(self.num_arr[i])
+
         self.max_value = self.max_segment(0, self.n - 1)
         self.min_value = self.min_segment(0, self.n - 1)
         self.max_string = self.print_max_memo[0][self.n - 1]
@@ -18,8 +21,12 @@ class MaximumQuotient:
         if self.max_memo[i][j] == -1:  # not computed
             temp_max = float('-inf')
             temp_pos = i
+
             for k in range(i, j):  # splits can only go from i to j - 1
                 curr = self.max_segment(i, k) / self.min_segment(k + 1, j)
+
+                # similar to the built-in max function, we want to pick the first max value, so we only change temp_max
+                # if curr is greater.
                 if curr > temp_max:
                     temp_max = curr
                     temp_pos = k
@@ -27,16 +34,22 @@ class MaximumQuotient:
             self.max_memo[i][j] = temp_max
 
             if j == i + 1:
+                # in this case, temp_pos will be i and there will be only two values and no need for parentheses.
                 self.print_max_memo[i][j] = (self.print_max_memo[i][temp_pos] +
                                              " / " + self.print_min_memo[temp_pos + 1][j])
             elif temp_pos == i:
+                # in this case, the split will be just after the first value so the parentheses will be for the
+                # denominator.
                 self.print_max_memo[i][j] = (self.print_max_memo[i][temp_pos] +
-                                             " / (" + self.print_min_memo[temp_pos + 1][
-                    j] + ")")
+                                             " / (" + self.print_min_memo[temp_pos + 1][j] + ")")
             elif j == temp_pos + 1:
+                # in this case, the split will be just before the final value so the parentheses will be for the
+                # numerator.
                 self.print_max_memo[i][j] = ("(" + self.print_max_memo[i][temp_pos] +
                                              ") / " + self.print_min_memo[temp_pos + 1][j])
             else:
+                # all special cases have been taken care of so both the numerator and denominator will have
+                # parentheses.
                 self.print_max_memo[i][j] = ("(" + self.print_max_memo[i][temp_pos] +
                                              ") / (" + self.print_min_memo[temp_pos + 1][j] + ")")
 
@@ -54,6 +67,7 @@ class MaximumQuotient:
 
             self.min_memo[i][j] = temp_min
 
+            # all parentheses placements have been explained in the max_segment function
             if j == i + 1:
                 self.print_min_memo[i][j] = (self.print_min_memo[i][temp_pos] + " / " +
                                              self.print_max_memo[temp_pos + 1][j])
